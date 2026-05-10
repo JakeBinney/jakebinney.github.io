@@ -315,11 +315,29 @@ function getStatus(m, d) {
   return 'none';
 }
 
-const today = new Date();
+// Single source of truth: puzzle day rolls over at 10:00 Helsinki time.
+function getEffectiveDate() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Helsinki',
+    year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', hour12: false,
+  }).formatToParts(new Date());
+  const get = type => parseInt(parts.find(p => p.type === type).value, 10);
+  const hour = get('hour') % 24;
+  let year = get('year'), month = get('month') - 1, day = get('day');
+  if (hour < 10) {
+    const prev = new Date(Date.UTC(year, month, day) - 86400000);
+    year = prev.getUTCFullYear(); month = prev.getUTCMonth(); day = prev.getUTCDate();
+  }
+  return { year, month, day };
+}
+
+const effectiveDate = getEffectiveDate();
+
 function isToday(m, d) {
-  return today.getFullYear() === 2026
-      && today.getMonth()    === m
-      && today.getDate()     === d;
+  return effectiveDate.year === 2026
+      && effectiveDate.month === m
+      && effectiveDate.day   === d;
 }
 
 function buildCalendar() {
@@ -387,9 +405,9 @@ function buildCalendar() {
 }
 
 function getDayOfYear() {
-  const t = new Date();
-  const start = Date.UTC(t.getFullYear(), 0, 0);
-  const end   = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+  const { year, month, day } = effectiveDate;
+  const start = Date.UTC(year, 0, 0);
+  const end   = Date.UTC(year, month, day);
   return Math.floor((end - start) / 86400000);
 }
 
