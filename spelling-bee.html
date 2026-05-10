@@ -15,18 +15,46 @@ body {
 }
 
 header {
-  background: #005b3b;
+  background: linear-gradient(160deg, #001f14 0%, #005b3b 55%, #001a10 100%);
   border-bottom: 2px solid #00e87a;
-  padding: 1.75rem 2rem 1.4rem;
+  box-shadow: 0 4px 28px rgba(0,232,122,0.12);
+  padding: 2.25rem 2rem 2rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0,232,122,0.1) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
 }
 
 header h1 {
-  font-size: clamp(1.8rem, 5vw, 3rem);
+  position: relative;
+  font-size: clamp(2rem, 6vw, 3.75rem);
   font-weight: 900;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #e8fff3;
-  text-shadow: 0 0 18px rgba(0,232,122,0.55), 0 0 40px rgba(0,232,122,0.25);
+  text-shadow:
+    0 0 8px  rgba(0,232,122,0.95),
+    0 0 24px rgba(0,232,122,0.6),
+    0 0 52px rgba(0,232,122,0.3);
+}
+
+header h1::after {
+  content: '';
+  display: block;
+  width: 64px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #00e87a, transparent);
+  margin: 0.8rem auto 0;
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(0,232,122,0.6);
 }
 
 main {
@@ -165,12 +193,12 @@ main {
     </div>
     <div class="stat">
       <span class="stat-icon">🐝</span>
-      <span class="stat-label">Genius Days</span>
+      <span class="stat-label">Genius</span>
       <span class="stat-value" id="stat-genius">0</span>
     </div>
     <div class="stat">
       <span class="stat-icon">👑</span>
-      <span class="stat-label">Queen Bee Days</span>
+      <span class="stat-label">Queen Bee</span>
       <span class="stat-value" id="stat-queen">0</span>
     </div>
   </div>
