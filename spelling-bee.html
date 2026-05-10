@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2026 Spelling Bee</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  background: #0e1b12;
+  color: #c4ffd8;
+  min-height: 100vh;
+}
+
+header {
+  background: #005b3b;
+  border-bottom: 2px solid #00e87a;
+  padding: 1.75rem 2rem 1.4rem;
+  text-align: center;
+}
+
+header h1 {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #e8fff3;
+  text-shadow: 0 0 18px rgba(0,232,122,0.55), 0 0 40px rgba(0,232,122,0.25);
+}
+
+main {
+  padding: 2rem 1.5rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (min-width: 1400px) { .calendar-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 750px)  { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  {
+  .calendar-grid { grid-template-columns: 1fr; }
+  main { padding: 1rem; }
+}
+
+.month-card {
+  background: #132a18;
+  border-radius: 12px;
+  padding: 0.875rem;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+  border: 1.5px solid #1f4a2c;
+}
+
+.month-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 0.6rem;
+  color: #00e87a;
+}
+
+.dow-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.2rem;
+}
+
+.dow-lbl {
+  text-align: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #5a9970;
+  text-transform: uppercase;
+  padding-bottom: 0.2rem;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.day-cell.bee   { background: #0b3320; }
+.day-cell.queen { background: #3d3000; }
+
+.day-cell.today {
+  box-shadow: 0 0 0 2px #00e87a, 0 0 10px rgba(0,232,122,0.4);
+}
+
+.day-num {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #7dc49a;
+}
+
+
+.day-emoji { font-size: 0.9rem; line-height: 1; }
+
+.stats {
+  background: #060d08;
+  border-bottom: 2px solid #005b3b;
+  padding: 3rem 2rem 3.5rem;
+}
+
+.stats-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+}
+
+.stat { text-align: center; min-width: 0; flex: 1; }
+
+.stat-icon  { font-size: 1.75rem; display: block; margin-bottom: 0.4rem; }
+.stat-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.13em; color: #7dc49a; display: block; margin-bottom: 0.5rem; }
+.stat-value {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #00e87a;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  text-shadow: 0 0 18px rgba(0,232,122,0.5), 0 0 40px rgba(0,232,122,0.2);
+}
+
+@media (max-width: 600px) {
+  .stats { padding: 1.75rem 1rem 2rem; }
+  .stats-inner { gap: 0.5rem; }
+  .stat-value  { font-size: 2.5rem; }
+  .stat-icon   { font-size: 1.25rem; }
+  .stat-label  { font-size: 0.55rem; letter-spacing: 0.07em; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>2026 Spelling Bee</h1>
+</header>
+
+<section class="stats">
+  <div class="stats-inner">
+    <div class="stat">
+      <span class="stat-icon">📅</span>
+      <span class="stat-label">Number of Puzzles</span>
+      <span class="stat-value" id="stat-day">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-icon">🐝</span>
+      <span class="stat-label">Genius Days</span>
+      <span class="stat-value" id="stat-genius">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-icon">👑</span>
+      <span class="stat-label">Queen Bee Days</span>
+      <span class="stat-value" id="stat-queen">0</span>
+    </div>
+  </div>
+</section>
+
+<main>
+  <div class="calendar-grid" id="calendar"></div>
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// YOUR DATA — edit this section and push a new commit each day.
+//
+// GENIUS: days you reached Genius (or better). Format: 'MM-DD'
+// QUEEN:  days you reached Queen Bee (also counts toward Genius total).
+// ─────────────────────────────────────────────────────────────────────────────
+
+const GENIUS = [
+  // January
+  '01-01','01-02','01-03','01-04','01-05','01-06','01-07',
+  '01-08','01-09','01-10','01-11','01-12','01-13','01-14',
+  '01-15','01-16','01-17','01-18','01-19','01-20','01-21',
+  '01-22','01-23','01-24','01-25','01-26','01-27','01-28',
+  '01-29','01-30','01-31',
+  // February
+  '02-01','02-02','02-03','02-04','02-05','02-06','02-07',
+  '02-08','02-09','02-10','02-11','02-12','02-13','02-14',
+  '02-15','02-16','02-17','02-18','02-19','02-20','02-21',
+  '02-22','02-23','02-24','02-25','02-26','02-27','02-28',
+  // March
+  '03-01','03-02','03-03','03-04','03-05','03-06','03-07',
+  '03-08','03-09','03-10','03-11','03-12','03-13','03-14',
+  '03-15','03-16','03-17','03-18','03-19','03-20','03-21',
+  '03-22','03-23','03-24','03-25','03-26','03-27','03-28',
+  '03-29','03-30','03-31',
+  // April
+  '04-01','04-02','04-03','04-04','04-05','04-06','04-07',
+  '04-08','04-09','04-10','04-11','04-12','04-13','04-14',
+  '04-15','04-16','04-17','04-18','04-19','04-20','04-21',
+  '04-22','04-23','04-24','04-25','04-26','04-27','04-28',
+  '04-29','04-30',
+  // May
+  '05-01','05-02','05-03','05-04','05-05','05-06','05-07',
+  '05-08','05-09','05-10'
+];
+
+const QUEEN = [
+  '01-30','02-10','02-11','02-20','02-22','02-25','03-09',
+  '03-24','03-27','04-01','04-06','05-04','05-05',
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+const DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+const geniusSet = new Set(GENIUS);
+const queenSet  = new Set(QUEEN);
+
+function mmdd(m, d) {
+  return String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+
+function getStatus(m, d) {
+  const k = mmdd(m, d);
+  if (queenSet.has(k))  return 'queen';
+  if (geniusSet.has(k)) return 'bee';
+  return 'none';
+}
+
+const today = new Date();
+function isToday(m, d) {
+  return today.getFullYear() === 2026
+      && today.getMonth()    === m
+      && today.getDate()     === d;
+}
+
+function buildCalendar() {
+  const cal = document.getElementById('calendar');
+
+  for (let m = 0; m < 12; m++) {
+    const card = document.createElement('div');
+    card.className = 'month-card';
+
+    const title = document.createElement('div');
+    title.className = 'month-name';
+    title.textContent = MONTHS[m];
+    card.appendChild(title);
+
+    const dow = document.createElement('div');
+    dow.className = 'dow-row';
+    DOW.forEach(l => {
+      const lbl = document.createElement('div');
+      lbl.className = 'dow-lbl';
+      lbl.textContent = l;
+      dow.appendChild(lbl);
+    });
+    card.appendChild(dow);
+
+    const grid = document.createElement('div');
+    grid.className = 'days-grid';
+
+    const firstDow    = new Date(2026, m, 1).getDay();
+    const daysInMonth = new Date(2026, m + 1, 0).getDate();
+
+    for (let i = 0; i < firstDow; i++) {
+      grid.appendChild(document.createElement('div'));
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const s    = getStatus(m, d);
+      const cell = document.createElement('div');
+      cell.className = 'day-cell' + (s !== 'none' ? ' ' + s : '') + (isToday(m, d) ? ' today' : '');
+
+      if (s !== 'none') {
+        const em = document.createElement('span');
+        em.className = 'day-emoji';
+        em.textContent = s === 'bee' ? '🐝' : '👑';
+        cell.appendChild(em);
+      } else {
+        const num = document.createElement('span');
+        num.className = 'day-num';
+        num.textContent = d;
+        cell.appendChild(num);
+      }
+
+      grid.appendChild(cell);
+    }
+
+    card.appendChild(grid);
+    cal.appendChild(card);
+  }
+}
+
+function getDayOfYear() {
+  const t = new Date();
+  const start = Date.UTC(t.getFullYear(), 0, 0);
+  const end   = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+  return Math.floor((end - start) / 86400000);
+}
+
+function animateCount(el, target, ms = 1300) {
+  const t0 = performance.now();
+  function tick(now) {
+    const p    = Math.min((now - t0) / ms, 1);
+    const ease = 1 - Math.pow(1 - p, 4);
+    el.textContent = Math.round(target * ease);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+buildCalendar();
+
+const totalGenius = geniusSet.size;
+animateCount(document.getElementById('stat-day'),    getDayOfYear());
+animateCount(document.getElementById('stat-genius'), totalGenius);
+animateCount(document.getElementById('stat-queen'),  queenSet.size);
+</script>
+</body>
+</html>
