@@ -17,7 +17,6 @@ body {
 
 header {
   background: linear-gradient(160deg, #001f14 0%, #005b3b 55%, #001a10 100%);
-  border-bottom: 2px solid #00e87a;
   box-shadow: 0 4px 28px rgba(0,232,122,0.12);
   padding: 2.25rem 2rem 2rem;
   text-align: center;
@@ -153,10 +152,34 @@ main {
 .day-emoji img { width: 1em; height: 1em; object-fit: contain; display: block; }
 .stat-icon img { width: 1.6em; height: 1.6em; object-fit: contain; display: block; margin: 0 auto; }
 
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #142e1c;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progress-fill-left {
+  transform-origin: left center;
+  background: linear-gradient(to right, #00e87a 80%, rgba(0,232,122,0) 100%);
+}
+
+.progress-fill-right {
+  transform-origin: right center;
+  background: linear-gradient(to left, #00e87a 80%, rgba(0,232,122,0) 100%);
+  transition-delay: 0.15s;
+}
+
 .stats {
   background: #060d08;
-  border-bottom: 2px solid #005b3b;
-  padding: 3rem 2rem 3.5rem;
 }
 
 .stats-inner {
@@ -165,6 +188,7 @@ main {
   display: flex;
   justify-content: center;
   gap: 4rem;
+  padding: 1.5rem 2rem 1.75rem;
 }
 
 .stat { text-align: center; min-width: 0; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
@@ -182,8 +206,7 @@ main {
 }
 
 @media (max-width: 600px) {
-  .stats { padding: 1.75rem 1rem 2rem; }
-  .stats-inner { gap: 0.5rem; }
+  .stats-inner { padding: 1rem 1rem 1.25rem; gap: 0.5rem; }
   .stat-value  { font-size: 2.5rem; }
   .stat-icon   { font-size: 1.25rem; }
   .stat-label  { font-size: 0.55rem; letter-spacing: 0.07em; }
@@ -195,12 +218,15 @@ main {
 <header>
   <div class="header-inner">
     <img src="favicon.png" alt="" class="header-icon" />
-    <h1>2026 Spelling Bee</h1>
+    <h1>Spelling Bee 2026</h1>
     <img src="favicon.png" alt="" class="header-icon header-icon-flip" />
   </div>
 </header>
 
 <section class="stats">
+  <div class="progress-bar">
+    <div class="progress-fill progress-fill-left" id="prog-top"></div>
+  </div>
   <div class="stats-inner">
     <div class="stat">
       <span class="stat-icon">📅</span>
@@ -217,6 +243,9 @@ main {
       <span class="stat-label">Queen Bee</span>
       <span class="stat-value" id="stat-queen">0</span>
     </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill progress-fill-right" id="prog-bottom"></div>
   </div>
 </section>
 
@@ -381,6 +410,12 @@ const totalGenius = geniusSet.size;
 animateCount(document.getElementById('stat-day'),    getDayOfYear());
 animateCount(document.getElementById('stat-genius'), totalGenius);
 animateCount(document.getElementById('stat-queen'),  queenSet.size);
+
+const yearPct = getDayOfYear() / 365;
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  document.getElementById('prog-top').style.transform    = `scaleX(${yearPct})`;
+  document.getElementById('prog-bottom').style.transform = `scaleX(${yearPct})`;
+}));
 </script>
 </body>
 </html>
